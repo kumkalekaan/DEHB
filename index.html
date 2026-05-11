@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanıt — kimlik inşa motoru</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F1EA;
+    --bg-card: #FBF7F0;
+    --ink: #2A2622;
+    --ink-soft: #6B6259;
+    --ink-faint: #A39A91;
+    --line: #E0D9CC;
+    --accent: #5C7A6B;
+    --accent-soft: #A8BBAE;
+    --warm: #C4956A;
+    --water: #8AACBF;
+    --paper-shadow: 0 1px 0 rgba(0,0,0,0.02);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(196, 149, 106, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(92, 122, 107, 0.04) 0%, transparent 40%);
+  }
+
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 48px;
+  }
+
+  .greeting {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .greeting em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  .sub {
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+
+  .date {
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+
+  /* Identity Card */
+  .identity-card {
+    background: var(--bg-card);
+    border: 0.5px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .identity-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  .identity-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .identity-statement {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  .identity-statement em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .identity-meta {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+
+  /* Section heading */
+  .section-heading {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--ink);
+    margin-bottom: 20px;
+    margin-top: 8px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .section-heading .hint {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-weight: 300;
+  }
+
+  /* Habit cards */
+  .habits {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+
+  .habit {
+    background: var(--bg-card);
+    border: 0.5px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 24px;
+    transition: all 0.3s ease;
+    box-shadow: var(--paper-shadow);
+  }
+
+  .habit.done {
+    background: linear-gradient(to right, rgba(92, 122, 107, 0.06), transparent);
+    border-color: var(--accent-soft);
+  }
+
+  .habit-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .habit-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    border: 0.5px solid var(--line);
+  }
+
+  .habit-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .habit-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .habit-context {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .habit-identity {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* Version buttons */
+  .versions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 16px;
+  }
+
+  .version-btn {
+    background: transparent;
+    border: 0.5px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .version-btn:hover {
+    border-color: var(--accent);
+    background: rgba(92, 122, 107, 0.04);
+    transform: translateX(2px);
+  }
+
+  .version-btn .label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 500;
+  }
+
+  .version-btn .desc {
+    flex: 1;
+    margin: 0 12px;
+    color: var(--ink-soft);
+    font-weight: 300;
+  }
+
+  .version-btn .arrow {
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 16px;
+  }
+
+  .version-btn:hover .arrow { opacity: 1; }
+
+  /* Done state */
+  .done-state {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(92, 122, 107, 0.08);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .done-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .done-text {
+    font-size: 13px;
+    color: var(--ink);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+
+  .undo-btn {
+    margin-left: auto;
+    background: none;
+    border: none;
+    font-size: 11px;
+    color: var(--ink-faint);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: inherit;
+  }
+
+  .undo-btn:hover { color: var(--ink-soft); }
+
+  /* Body Doubling */
+  .body-double {
+    background: var(--bg-card);
+    border: 0.5px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .bd-icon {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--accent);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(92, 122, 107, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .bd-content {
+    flex: 1;
+  }
+
+  .bd-title {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .bd-sub {
+    font-size: 12px;
+    color: var(--ink-faint);
+    font-weight: 300;
+  }
+
+  .bd-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .bd-btn:hover { background: #4D6A5C; }
+
+  .bd-btn.active { background: var(--warm); }
+
+  /* Body double overlay */
+  .bd-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(42, 38, 34, 0.85);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    flex-direction: column;
+    color: var(--bg);
+  }
+
+  .bd-overlay.show { display: flex; }
+
+  .bd-circle {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 1px solid rgba(245, 241, 234, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 32px;
+  }
+
+  .bd-progress {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent-soft) 0%, transparent 0%);
+    transition: background 1s linear;
+    opacity: 0.4;
+  }
+
+  .bd-time {
+    font-family: 'Fraunces', serif;
+    font-size: 56px;
+    font-weight: 300;
+    color: var(--bg);
+    z-index: 1;
+  }
+
+  .bd-companion {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--accent-soft);
+    margin-bottom: 8px;
+  }
+
+  .bd-status {
+    font-size: 13px;
+    color: rgba(245, 241, 234, 0.6);
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  .bd-stop {
+    background: transparent;
+    color: var(--bg);
+    border: 0.5px solid rgba(245, 241, 234, 0.3);
+    padding: 10px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+  }
+
+  .bd-stop:hover { background: rgba(245, 241, 234, 0.1); }
+
+  /* Evidence wall */
+  .evidence-section {
+    margin-bottom: 32px;
+  }
+
+  .evidence-wall {
+    background: var(--bg-card);
+    border: 0.5px solid var(--line);
+    border-radius: 14px;
+    padding: 24px;
+    min-height: 120px;
+  }
+
+  .evidence-stones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .stone {
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .stone.new {
+    animation: stoneAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes stoneAppear {
+    0% { transform: scale(0) rotate(0deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(20deg); }
+    100% { transform: scale(1) rotate(var(--rot, 0deg)); opacity: 0.85; }
+  }
+
+  .evidence-empty {
+    color: var(--ink-faint);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    text-align: center;
+    padding: 16px 0;
+  }
+
+  .evidence-stats {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 0.5px solid var(--line);
+  }
+
+  .stat {
+    text-align: center;
+    flex: 1;
+  }
+
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* Coach */
+  .coach {
+    background: var(--bg-card);
+    border: 0.5px solid var(--line);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+
+  .coach-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .coach-q {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--ink);
+    font-style: italic;
+    margin-bottom: 16px;
+  }
+
+  .coach-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .coach-action {
+    background: transparent;
+    border: 0.5px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+  }
+
+  .coach-action:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 15px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 50;
+    max-width: 90%;
+    text-align: center;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 0.5px solid var(--line);
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+
+  .footer em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+
+  /* Reset link */
+  .reset-link {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    font-size: 11px;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-top: 8px;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="date" id="date-line"></div>
+    <h1 class="greeting" id="greeting">Hoş geldin. <em>Bugün tek bir şey yeterli.</em></h1>
+    <div class="sub">Burası bir takip uygulaması değil. Burası kanıt biriktirdiğin yer.</div>
+  </div>
+
+  <!-- Identity card -->
+  <div class="identity-card">
+    <div class="identity-label">Şu an kimsin</div>
+    <div class="identity-statement" id="identity-statement">
+      <em>Henüz bir hikaye yok.</em> İlk kanıtını ekle.
+    </div>
+    <div class="identity-meta" id="identity-meta">Toplam 0 kanıt biriktirdin.</div>
+  </div>
+
+  <!-- Body Doubling -->
+  <div class="body-double">
+    <div class="bd-icon">∞</div>
+    <div class="bd-content">
+      <div class="bd-title">Birlikte yapalım</div>
+      <div class="bd-sub">25 dakika · sessiz bir dost yanında çalışır</div>
+    </div>
+    <button class="bd-btn" id="bd-start">Başla</button>
+  </div>
+
+  <!-- Today's habits -->
+  <div class="section-heading">
+    Bugün
+    <span class="hint">Tam, mini ya da sembolik — hepsi sayılır</span>
+  </div>
+
+  <div class="habits" id="habits-list"></div>
+
+  <!-- Evidence Wall -->
+  <div class="evidence-section">
+    <div class="section-heading">
+      Kanıt duvarı
+      <span class="hint">Her taş bir gün</span>
+    </div>
+    <div class="evidence-wall">
+      <div class="evidence-stones" id="evidence-stones"></div>
+      <div class="evidence-stats">
+        <div class="stat">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Toplam kanıt</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="stat-week">0</div>
+          <div class="stat-label">Bu hafta</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="stat-days">0</div>
+          <div class="stat-label">Aktif gün</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Coach -->
+  <div class="coach">
+    <div class="coach-label">Sessiz koç</div>
+    <div class="coach-q" id="coach-question">
+      Bu hafta seni hangi alışkanlık en çok zorladı?
+    </div>
+    <div class="coach-actions" id="coach-actions"></div>
+  </div>
+
+  <div class="footer">
+    <em>küçük versiyonlar gerçek versiyonlardır</em>
+    <br>
+    <button class="reset-link" onclick="resetData()">verileri sıfırla</button>
+  </div>
+
+</div>
+
+<!-- Body Double Overlay -->
+<div class="bd-overlay" id="bd-overlay">
+  <div class="bd-companion">— Yanındayım —</div>
+  <div class="bd-circle">
+    <div class="bd-progress" id="bd-progress"></div>
+    <div class="bd-time" id="bd-time">25:00</div>
+  </div>
+  <div class="bd-status" id="bd-status">Sessizce çalış. Ben buradayım.</div>
+  <button class="bd-stop" id="bd-stop">Bitti</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ───────────────────────────────────────────────
+// Data layer
+// ───────────────────────────────────────────────
+
+const HABITS = [
+  {
+    id: 'morning',
+    name: 'Sabah hareketi',
+    icon: '☀',
+    context: 'Uykudan kalktıktan hemen sonra',
+    identity: 'sabah insanı',
+    color: '#C4956A',
+    versions: {
+      full:     { label: 'Tam',      desc: '20+ dakika yürüyüş veya egzersiz' },
+      mini:     { label: 'Mini',     desc: '5 dakika esneme' },
+      symbolic: { label: 'Sembolik', desc: 'Pencerede 3 derin nefes' }
+    }
+  },
+  {
+    id: 'focus',
+    name: 'Odaklanma seansı',
+    icon: '◐',
+    context: 'Kahveni / çayını aldıktan sonra',
+    identity: 'zihnini yönetebilen biri',
+    color: '#5C7A6B',
+    versions: {
+      full:     { label: 'Tam',      desc: '25 dakika derin çalışma' },
+      mini:     { label: 'Mini',     desc: '10 dakika tek görev' },
+      symbolic: { label: 'Sembolik', desc: 'Bir sonraki adımı tek cümleyle yaz' }
+    }
+  },
+  {
+    id: 'body',
+    name: 'Beden bakımı',
+    icon: '◇',
+    context: 'Öğlen yemeğinden önce',
+    identity: 'bedenine dikkat eden biri',
+    color: '#8AACBF',
+    versions: {
+      full:     { label: 'Tam',      desc: 'Sağlıklı öğün + 1L su' },
+      mini:     { label: 'Mini',     desc: '1 büyük bardak su iç' },
+      symbolic: { label: 'Sembolik', desc: 'Şimdi bir yudum su al' }
+    }
+  }
+];
+
+const STORAGE_KEY = 'kanit_data_v1';
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { entries: [], lastSeenDate: null };
+}
+
+function saveData(d) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch (e) {}
+}
+
+let state = loadData();
+
+// ───────────────────────────────────────────────
+// Date helpers
+// ───────────────────────────────────────────────
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getTodayEntries() {
+  const t = todayStr();
+  return state.entries.filter(e => e.date === t);
+}
+
+function getTodayEntry(habitId) {
+  return getTodayEntries().find(e => e.habitId === habitId);
+}
+
+function formatDateLine() {
+  const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+  const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+  const d = new Date();
+  return `${days[d.getDay()]} · ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+// ───────────────────────────────────────────────
+// Identity engine
+// ───────────────────────────────────────────────
+
+function computeIdentity() {
+  const counts = {};
+  HABITS.forEach(h => counts[h.id] = 0);
+  state.entries.forEach(e => {
+    if (counts[e.habitId] !== undefined) counts[e.habitId]++;
+  });
+
+  const total = state.entries.length;
+  if (total === 0) return null;
+
+  // Find dominant identities (>= 3 evidence pieces)
+  const identities = HABITS
+    .map(h => ({ habit: h, count: counts[h.id] }))
+    .filter(x => x.count >= 3)
+    .sort((a,b) => b.count - a.count);
+
+  if (identities.length === 0) {
+    return { text: 'başlamış biri', count: total, type: 'starting' };
+  }
+
+  if (identities.length === 1) {
+    return { text: identities[0].habit.identity, count: identities[0].count, type: 'single' };
+  }
+
+  // Multiple identities
+  return {
+    text: identities.map(i => i.habit.identity).join(' · '),
+    count: total,
+    type: 'multiple',
+    breakdown: identities
+  };
+}
+
+// ───────────────────────────────────────────────
+// Render
+// ───────────────────────────────────────────────
+
+function render() {
+  // Date
+  document.getElementById('date-line').textContent = formatDateLine();
+
+  // Greeting
+  const todayCount = getTodayEntries().length;
+  const greetingEl = document.getElementById('greeting');
+  if (todayCount === 0) {
+    greetingEl.innerHTML = 'Hoş geldin. <em>Bugün tek bir şey yeterli.</em>';
+  } else if (todayCount === 1) {
+    greetingEl.innerHTML = '<em>İlk kanıt eklendi.</em> Devam edebilirsin ya da burada bırakabilirsin.';
+  } else if (todayCount === 2) {
+    greetingEl.innerHTML = '<em>İki kanıt.</em> Bugün biriken bir gün.';
+  } else {
+    greetingEl.innerHTML = '<em>Bugün tam.</em> Daha fazlasına gerek yok.';
+  }
+
+  // Identity
+  const identity = computeIdentity();
+  const idEl = document.getElementById('identity-statement');
+  const metaEl = document.getElementById('identity-meta');
+
+  if (!identity) {
+    idEl.innerHTML = '<em>Henüz bir hikaye yok.</em> İlk kanıtını ekle.';
+    metaEl.textContent = 'Toplam 0 kanıt biriktirdin.';
+  } else if (identity.type === 'starting') {
+    idEl.innerHTML = `Sen artık <em>başlamış</em> birisin.`;
+    metaEl.textContent = `${identity.count} kanıt · 3 kanıta ulaşan alışkanlık kimliğe dönüşür.`;
+  } else if (identity.type === 'single') {
+    idEl.innerHTML = `Sen artık <em>${identity.text}</em>sın.`;
+    metaEl.textContent = `${identity.count} kanıt biriktirdin. Bu artık tesadüf değil.`;
+  } else {
+    const phrases = identity.breakdown.map(b => `<em>${b.habit.identity}</em>`).join(' · ');
+    idEl.innerHTML = `Sen birden fazla şeysin: ${phrases}.`;
+    metaEl.textContent = `Toplam ${identity.count} kanıt biriktirdin.`;
+  }
+
+  // Habits
+  renderHabits();
+
+  // Evidence wall
+  renderEvidence();
+
+  // Coach
+  renderCoach();
+}
+
+function renderHabits() {
+  const list = document.getElementById('habits-list');
+  list.innerHTML = '';
+
+  HABITS.forEach(habit => {
+    const todayEntry = getTodayEntry(habit.id);
+    const div = document.createElement('div');
+    div.className = 'habit' + (todayEntry ? ' done' : '');
+
+    let inner = `
+      <div class="habit-row">
+        <div class="habit-icon" style="color: ${habit.color}">${habit.icon}</div>
+        <div class="habit-info">
+          <div class="habit-name">${habit.name}</div>
+          <div class="habit-context">${habit.context}</div>
+          <div class="habit-identity">— ${habit.identity}</div>
+        </div>
+      </div>
+    `;
+
+    if (todayEntry) {
+      const v = habit.versions[todayEntry.version];
+      inner += `
+        <div class="done-state">
+          <div class="done-check">✓</div>
+          <div class="done-text">${v.label.toLowerCase()} versiyonu — bugün yeter</div>
+          <button class="undo-btn" data-undo="${habit.id}">geri al</button>
+        </div>
+      `;
+    } else {
+      inner += `<div class="versions">`;
+      ['full','mini','symbolic'].forEach(v => {
+        const ver = habit.versions[v];
+        inner += `
+          <button class="version-btn" data-habit="${habit.id}" data-version="${v}">
+            <span class="label">${ver.label}</span>
+            <span class="desc">${ver.desc}</span>
+            <span class="arrow">→</span>
+          </button>
+        `;
+      });
+      inner += `</div>`;
+    }
+
+    div.innerHTML = inner;
+    list.appendChild(div);
+  });
+
+  // Bind events
+  list.querySelectorAll('.version-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      completeHabit(btn.dataset.habit, btn.dataset.version);
+    });
+  });
+  list.querySelectorAll('.undo-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      undoHabit(btn.dataset.undo);
+    });
+  });
+}
+
+function renderEvidence() {
+  const stonesEl = document.getElementById('evidence-stones');
+  const total = state.entries.length;
+
+  if (total === 0) {
+    stonesEl.innerHTML = `<div class="evidence-empty" style="width:100%">İlk taşın eklendiğinde burada görünecek.</div>`;
+  } else {
+    stonesEl.innerHTML = '';
+    state.entries.forEach((e, i) => {
+      const habit = HABITS.find(h => h.id === e.habitId);
+      if (!habit) return;
+      const stone = makeStone(habit.color, i, e.justAdded);
+      stonesEl.appendChild(stone);
+    });
+    // Clear justAdded flags
+    state.entries.forEach(e => delete e.justAdded);
+  }
+
+  // Stats
+  document.getElementById('stat-total').textContent = total;
+
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekStr = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth()+1).padStart(2,'0')}-${String(weekAgo.getDate()).padStart(2,'0')}`;
+  const weekCount = state.entries.filter(e => e.date >= weekStr).length;
+  document.getElementById('stat-week').textContent = weekCount;
+
+  const uniqueDays = new Set(state.entries.map(e => e.date)).size;
+  document.getElementById('stat-days').textContent = uniqueDays;
+}
+
+function makeStone(color, index, isNew) {
+  const shapes = [
+    '50% 50% 60% 40% / 60% 40% 50% 50%',
+    '40% 60% 55% 45% / 50% 60% 40% 55%',
+    '60% 40% 45% 55% / 45% 55% 60% 40%',
+    '50% 50% 40% 60% / 55% 45% 50% 50%',
+    '45% 55% 50% 50% / 55% 45% 55% 45%'
+  ];
+  const sizes = [22, 26, 30, 24, 28, 32, 20, 27];
+  const div = document.createElement('div');
+  div.className = 'stone' + (isNew ? ' new' : '');
+  const size = sizes[index % sizes.length];
+  const rot = (index * 37) % 60 - 30;
+  div.style.cssText = `
+    width: ${size}px;
+    height: ${size}px;
+    border-radius: ${shapes[index % shapes.length]};
+    background: ${color};
+    transform: rotate(${rot}deg);
+    opacity: 0.85;
+    --rot: ${rot}deg;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  `;
+  return div;
+}
+
+function renderCoach() {
+  const qEl = document.getElementById('coach-question');
+  const aEl = document.getElementById('coach-actions');
+
+  // Find weakest habit (least evidence in last 7 days)
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekStr = `${weekAgo.getFullYear()}-${String(weekAgo.getMonth()+1).padStart(2,'0')}-${String(weekAgo.getDate()).padStart(2,'0')}`;
+
+  const recentCounts = {};
+  HABITS.forEach(h => recentCounts[h.id] = 0);
+  state.entries.filter(e => e.date >= weekStr).forEach(e => {
+    if (recentCounts[e.habitId] !== undefined) recentCounts[e.habitId]++;
+  });
+
+  const totalRecent = Object.values(recentCounts).reduce((a,b) => a+b, 0);
+
+  if (totalRecent === 0) {
+    qEl.textContent = 'Henüz başlamadıysan, hangisi en küçük adımla başlanabilir?';
+    aEl.innerHTML = HABITS.map(h => `
+      <button class="coach-action" onclick="completeHabit('${h.id}','symbolic')">
+        ${h.name} · sembolik
+      </button>
+    `).join('');
+    return;
+  }
+
+  // Find weakest
+  const weakest = HABITS.map(h => ({ h, c: recentCounts[h.id] })).sort((a,b) => a.c - b.c)[0];
+
+  if (weakest.c === 0) {
+    qEl.innerHTML = `<strong style="font-style:normal;font-weight:500;">${weakest.h.name}</strong> bu hafta görünmüyor. Bağlamı değişmiş olabilir mi?`;
+    aEl.innerHTML = `
+      <button class="coach-action" onclick="completeHabit('${weakest.h.id}','symbolic')">
+        Sembolik versiyonu yap
+      </button>
+      <button class="coach-action" onclick="showToast('Bağlam yeniden tanımlama özelliği yakında ✦')">
+        Bağlamı değiştir
+      </button>
+    `;
+  } else {
+    qEl.textContent = 'Bu hafta seni hangi alışkanlık en çok zorladı?';
+    aEl.innerHTML = HABITS.map(h => `
+      <button class="coach-action" onclick="suggestForHabit('${h.id}')">${h.name}</button>
+    `).join('');
+  }
+}
+
+window.suggestForHabit = function(habitId) {
+  const h = HABITS.find(x => x.id === habitId);
+  const qEl = document.getElementById('coach-question');
+  const aEl = document.getElementById('coach-actions');
+  qEl.innerHTML = `<strong style="font-style:normal;font-weight:500;">${h.name}</strong> için bugün en küçük versiyon: <em>${h.versions.symbolic.desc.toLowerCase()}</em>`;
+  aEl.innerHTML = `
+    <button class="coach-action" onclick="completeHabit('${h.id}','symbolic')">Şimdi yap</button>
+    <button class="coach-action" onclick="renderCoach()">Geri</button>
+  `;
+};
+
+// ───────────────────────────────────────────────
+// Actions
+// ───────────────────────────────────────────────
+
+const ENCOURAGEMENTS = [
+  'Bir taş daha eklendi.',
+  'Sayıldı. Burada artık bir kanıt var.',
+  'Kötü gün de iyi gün de aynı kanıt.',
+  'Geri döndün. Bu sayılır.',
+  'Küçük versiyon gerçek versiyondur.',
+  'Sen bu tür bir insansın.',
+  'Bugün biriken bir gün oldu.'
+];
+
+function completeHabit(habitId, version) {
+  // Prevent duplicate
+  if (getTodayEntry(habitId)) return;
+
+  state.entries.push({
+    habitId,
+    version,
+    date: todayStr(),
+    timestamp: Date.now(),
+    justAdded: true
+  });
+  saveData(state);
+
+  const msg = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+  showToast(msg);
+
+  // Variable reward: every 7th entry shows special message
+  if (state.entries.length % 7 === 0) {
+    setTimeout(() => {
+      showToast(`✦ ${state.entries.length} kanıt. Sen artık tesadüf değilsin.`, 3500);
+    }, 1800);
+  }
+
+  render();
+}
+
+function undoHabit(habitId) {
+  const t = todayStr();
+  state.entries = state.entries.filter(e => !(e.habitId === habitId && e.date === t));
+  saveData(state);
+  render();
+}
+
+function showToast(msg, duration = 2400) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timeout);
+  el._timeout = setTimeout(() => el.classList.remove('show'), duration);
+}
+
+window.completeHabit = completeHabit;
+window.showToast = showToast;
+window.renderCoach = renderCoach;
+
+window.resetData = function() {
+  if (confirm('Tüm kanıtlar silinecek. Emin misin?')) {
+    state = { entries: [], lastSeenDate: null };
+    saveData(state);
+    render();
+  }
+};
+
+// ───────────────────────────────────────────────
+// Body Doubling
+// ───────────────────────────────────────────────
+
+let bdInterval = null;
+let bdEndTime = null;
+
+function startBodyDouble() {
+  const overlay = document.getElementById('bd-overlay');
+  overlay.classList.add('show');
+  bdEndTime = Date.now() + 25 * 60 * 1000;
+  updateBdTimer();
+  bdInterval = setInterval(updateBdTimer, 1000);
+  document.getElementById('bd-start').textContent = 'Devam ediyor';
+  document.getElementById('bd-start').classList.add('active');
+}
+
+function updateBdTimer() {
+  const remaining = Math.max(0, bdEndTime - Date.now());
+  const total = 25 * 60 * 1000;
+  const progress = ((total - remaining) / total) * 100;
+
+  const min = Math.floor(remaining / 60000);
+  const sec = Math.floor((remaining % 60000) / 1000);
+  document.getElementById('bd-time').textContent =
+    `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+
+  document.getElementById('bd-progress').style.background =
+    `conic-gradient(rgba(168, 187, 174, 0.3) ${progress}%, transparent ${progress}%)`;
+
+  // Status message changes over time
+  const statusEl = document.getElementById('bd-status');
+  if (progress < 25) statusEl.textContent = 'Sessizce çalış. Ben buradayım.';
+  else if (progress < 50) statusEl.textContent = 'Devam ediyorsun. Güzel.';
+  else if (progress < 75) statusEl.textContent = 'Yarıyı geçtin.';
+  else if (progress < 100) statusEl.textContent = 'Az kaldı. Bu seansı bitir.';
+  else {
+    statusEl.textContent = 'Tamamlandı.';
+    stopBodyDouble(true);
+  }
+}
+
+function stopBodyDouble(completed = false) {
+  if (bdInterval) clearInterval(bdInterval);
+  bdInterval = null;
+  document.getElementById('bd-overlay').classList.remove('show');
+  document.getElementById('bd-start').textContent = 'Başla';
+  document.getElementById('bd-start').classList.remove('active');
+
+  if (completed) {
+    showToast('25 dakika boyunca yanındaydım. Bu sayılır.', 3000);
+    // Auto-credit focus habit if not done
+    if (!getTodayEntry('focus')) {
+      completeHabit('focus', 'full');
+    }
+  }
+}
+
+document.getElementById('bd-start').addEventListener('click', () => {
+  if (bdInterval) {
+    document.getElementById('bd-overlay').classList.add('show');
+  } else {
+    startBodyDouble();
+  }
+});
+
+document.getElementById('bd-stop').addEventListener('click', () => stopBodyDouble(false));
+
+// ───────────────────────────────────────────────
+// Init
+// ───────────────────────────────────────────────
+
+render();
+</script>
+
+</body>
+</html>
